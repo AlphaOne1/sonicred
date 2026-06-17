@@ -37,7 +37,7 @@ dependencies:
         alias: logs
 
     -   name: victoria-traces-single
-        version: 0.1.7
+        version: 0.1.8
         repository: https://victoriametrics.github.io/helm-charts/
         alias: traces
 
