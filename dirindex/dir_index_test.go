@@ -159,11 +159,11 @@ func indexCreateFS(t *testing.T) (*os.Root, string) {
 
 //nolint:lll //we have to have some longer lines here
 func TestCollectDirectoryEntries(t *testing.T) {
+	t.Parallel()
+
 	if runtime.GOOS == "windows" {
 		t.Skip("windows not supported yet")
 	}
-
-	t.Parallel()
 
 	tests := []struct {
 		path         string
