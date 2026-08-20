@@ -2,10 +2,11 @@
      SPDX-License-Identifier: MPL-2.0
 -->
 
-Release Next
-============
+Release 1.11.1
+==============
 
-- added more translations to directory listing
+- updated the minimum required Go version to 1.27
+- added more translations to the directory listing
 - dependency updates
 
 Release 1.11.0
