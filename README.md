@@ -346,6 +346,9 @@ There is also extensive documentation on how to write new rules.
                        -wafcfg /etc/crs4/plugins/\*-after.conf
 ```
 
+If *SonicRed* is started using the Web Application Firewall, it needs a writable space under `/tmp`.
+Currently, as little as 2 MiB are completely sufficient for the core ruleset and its basic configuration.
+
 Docker Usage
 ------------
 
