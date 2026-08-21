@@ -21,7 +21,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                language: ["go"]
+                language:
+                  - "actions"
+                  - "go"
+                  - "javascript-typescript"
 
         steps:
           - name: Checkout repository
@@ -30,6 +33,7 @@ jobs:
                 fetch-depth: 1
 
           - name: Set up Go
+            if:   matrix.language == 'go'
             uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
             with:
                 go-version-file: go.mod
