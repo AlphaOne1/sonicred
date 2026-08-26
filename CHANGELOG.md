@@ -2,6 +2,13 @@
      SPDX-License-Identifier: MPL-2.0
 -->
 
+Release Next
+============
+
+- updated dependencies
+- updated docker build-stage image
+- updated helm dependencies
+
 Release 1.11.1
 ==============
 
