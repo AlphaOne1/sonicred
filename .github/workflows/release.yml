@@ -94,6 +94,12 @@ jobs:
                 make third_party_licenses-${{ matrix.os }}-${{ matrix.architecture }}-dir \
                      third_party_licenses-${{ matrix.os }}-${{ matrix.architecture }}.tar.xz
 
+          - name: Generate SBOM with Syft
+            uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+            with:
+                path: sonicred-${{ matrix.os }}-${{ matrix.architecture }}${{ matrix.os == 'windows' && '.exe' || '' }}
+                output-file: sonicred-${{ matrix.os }}-${{ matrix.architecture}}-sbom.spdx.json
+
           - name: Upload Executable Artifacts
             if: matrix.os == 'linux'
             uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -112,6 +118,15 @@ jobs:
                 path: |
                     third_party_licenses-${{ matrix.os }}-${{ matrix.architecture }}.tar.xz
                 compression-level: '1'
+                retention-days: 2
+
+          - name: Upload SBOM Artifact
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            with:
+                name: sonicred-${{ matrix.os }}-${{ matrix.architecture }}-sbom.spdx.json
+                path: |
+                    sonicred-${{ matrix.os }}-${{ matrix.architecture }}-sbom.spdx.json
+                compression-level: '9'
                 retention-days: 2
 
           - name: Build Package
@@ -150,11 +165,11 @@ jobs:
                 TAG_NAME: ${{ github.event.release.tag_name }}
             shell: bash
             run: |
-                shopt -s nullglob
-                for file in sonicred-*-*.tar.xz SonicRed*.rpm SonicRed*.deb
-                do
-                    gh release upload "$TAG_NAME" "$file" --clobber
-                done
+                gh release upload "$TAG_NAME" \
+                    sonicred-*-*.tar.xz       \
+                    SonicRed*.rpm             \
+                    SonicRed*.deb             \
+                    *-sbom.spdx.json --clobber
 
           - name: Upload Windows Release (via GitHub CLI)
             if: matrix.os == 'windows'
@@ -165,9 +180,7 @@ jobs:
             run: |
                 Set-StrictMode -Version Latest
                 $ErrorActionPreference = 'Stop'
-                Get-ChildItem -File -Path . -Filter 'sonicred-*-*.7z' | ForEach-Object {
-                    gh release upload $env:TAG_NAME $_.FullName --clobber
-                }
+                gh release upload $env:TAG_NAME sonicred-*-*.7z *-sbom.spdx.json--clobber
 
     BuildDockerMultiArch:
         permissions:
