@@ -55,7 +55,7 @@
 
     <script>
         // Generation of SRI-Hash:
-        //     curl -sSL <URL> | openssl dgst -sha256 -binary | openssl base64 -A
+        //     curl -sSL <URL> | openssl dgst -sha384 -binary | openssl base64 -A
         // and remove trailing % if present.
         function loadCSS(localHref, fallbackHref, fallbackInt) {
             const link = document.createElement('link');
@@ -189,21 +189,21 @@
         // Load GitHub Markdown CSS: local first, fallback to CDN
         loadCSS(
             'styles/github-markdown.min.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css',
-            'sha384-bKf/D9oOhMXM113OMRKT6sKFRT4jT3AulvzsGu563IJ5zmaH5LSA26VfwRJQ8GAR'
+            'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.9.0/github-markdown.min.css',
+            'sha384-dvqix+FXNZkkgkfxRwowYZelxQUSFEjEbDpb1k1mIMw84dsT8M3NM2CJC3xyp2hh'
         );
 
         // Replace the one load of hljs-CSS with two with media attribute
         // Light/Default
         loadCSS(
             'styles/github.min.css',
-            'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
+            'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/styles/github.min.css',
             'sha384-eFTL69TLRZTkNfYZOLM+G04821K1qZao/4QLJbet1pP4tcF+fdXq/9CdqAbWRl/L'
         );
         // Dark (dimmed) – automatically only in dark mode through loadCSS magic
         loadCSS(
             'styles/github-dark-dimmed.min.css',
-            'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark-dimmed.min.css',
+            'https://cdn.jsdelivr.net/npm/highlight.js@11.12.0/styles/github-dark-dimmed.min.css',
             'sha384-PiLidnnRuzFgp4qiN8oGNmktrV8ETL+6a8heAxljUX4A+3XWlocwaMn9duBUepfK',
         )
 
@@ -214,18 +214,18 @@
                 [
                     // 1) Load highlight.js first (local → CDN)
                     [   'js/highlight.min.js',
-                        'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js',
-                        'sha384-RH2xi4eIQ/gjtbs9fUXM68sLSi99C7ZWBRX1vDrVv6GQXRibxXLbwO2NGZB74MbU'
+                        'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/highlight.min.js',
+                        'sha384-wjfDDhOPPdjtva8vWBhWeVprSpmxisEu5aYT3q1JyACqXpdKpo3PWZTMVq24MBix'
                     ],
                     // 2) Load marked.js (local → CDN)
                     [   'js/marked.umd.min.js',
-                        'https://cdnjs.cloudflare.com/ajax/libs/marked/16.3.0/lib/marked.umd.min.js',
-                        'sha384-28tGVU6cfNCYHN01DPkRbQ5zNcqr7cHx7RE2PA0Os8oQsE0H1dRIJBoGPX75oXDs'
+                        'https://cdnjs.cloudflare.com/ajax/libs/marked/18.0.10/lib/marked.umd.min.js',
+                        'sha384-2sZoZkY0dSopyVhL5X3bLyTfz4k3kFJVK7yoEHdbYOlt85O2vHQTT2uVOPxIlsmb'
                     ],
                     // 3) Load marked-highlight.js (local → CDN)
                     [   'js/marked-highlight.umd.min.js',
-                        'https://cdnjs.cloudflare.com/ajax/libs/marked-highlight/2.2.2/index.umd.min.js',
-                        'sha384-+mT40US4xoeuAAclujvPMKhn+xurhsJhB+wvml506kimV5UmDNe6YOjMC4fpw6yk'
+                        'https://cdnjs.cloudflare.com/ajax/libs/marked-highlight/2.2.4/index.umd.min.js',
+                        'sha384-wOw/7DPvv8MSViZAkr3rP14kqVYmfxqCUYmE1NTYJL9S3MxQFI90vVuVzk+LduSs'
                     ]
                 ],
                 () => {
