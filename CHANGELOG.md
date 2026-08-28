@@ -6,6 +6,7 @@ Release Next
 ============
 
 - updated dependencies
+- updated readme viewer for docker image
 - updated docker build-stage image
 - updated helm dependencies
 
@@ -14,6 +15,7 @@ Release 1.11.1
 
 - updated the minimum required Go version to 1.27
 - added more translations to the directory listing
+- integrated SBOM generation
 - dependency updates
 
 Release 1.11.0
