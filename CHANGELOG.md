@@ -5,10 +5,11 @@
 Release Next
 ============
 
-- updated dependencies
 - updated readme viewer for docker image
 - updated docker build-stage image
 - updated helm dependencies
+- changed to self-maintained GoReportCard
+- dependency updates
 
 Release 1.11.1
 ==============

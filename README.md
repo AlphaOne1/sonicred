@@ -34,10 +34,11 @@
         <img src="https://github.com/AlphaOne1/sonicred/actions/workflows/security.yml/badge.svg"
              alt="Security Pipeline Result">
     </a>
-    <a href="https://goreportcard.com/report/github.com/AlphaOne1/sonicred"
+    <!-- RepositoryID from https://api.github.com/repos/AlphaOne1/sonicred, field id -->
+    <a href="https://github.com/AlphaOne1/sonicred/actions/workflows/scorecard.yml"
        rel="external noopener noreferrer"
        target="_blank">
-        <img src="https://goreportcard.com/badge/github.com/AlphaOne1/sonicred"
+        <img src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/AlphaOne1/0f47fabbef81ed7bcc00e34da9d5d78a/raw/809277526-badge.json"
              alt="Go Report Card">
     </a>
     <a href="https://app.codecov.io/gh/AlphaOne1/sonicred"
