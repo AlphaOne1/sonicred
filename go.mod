@@ -8,7 +8,7 @@ go 1.27
 require (
 	github.com/AlphaOne1/geany v0.1.4
 	github.com/AlphaOne1/midgard v0.3.0
-	github.com/corazawaf/coraza/v3 v3.7.0
+	github.com/corazawaf/coraza/v3 v3.8.1
 	github.com/prometheus/client_golang v1.24.1
 	github.com/stretchr/testify v1.12.1
 	go.opentelemetry.io/contrib/bridges/otelslog v0.20.1
@@ -68,7 +68,6 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
-	github.com/foxcpp/go-mockdns v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.9.1 // indirect
