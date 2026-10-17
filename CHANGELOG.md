@@ -2,8 +2,8 @@
      SPDX-License-Identifier: MPL-2.0
 -->
 
-Release Next
-============
+Release 1.11.2
+==============
 
 - updated readme viewer for docker image
 - updated docker build-stage image
