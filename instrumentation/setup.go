@@ -17,6 +17,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
@@ -142,6 +143,12 @@ func SetupOTelSDK(
 	if meterProvider != nil {
 		shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
 		otel.SetMeterProvider(meterProvider)
+
+		// Go runtime metrics (memory, GC, goroutines, scheduler)
+		if rtErr := runtime.Start(runtime.WithMeterProvider(meterProvider)); rtErr != nil {
+			handleErr(fmt.Errorf("could not start runtime instrumentation: %w", rtErr))
+			return shutdown, nil, nil, err
+		}
 	}
 
 	// Set up a logger provider.
@@ -342,8 +349,9 @@ func newMeterReader(
 			err = ErrUnsupportedOTLPProtocol
 		}
 	case OTLPExporterPrometheus:
-		reg := prometheus.NewRegistry()                                  // create explicit registry
-		reader, err = otelprom.New(otelprom.WithRegisterer(reg))         // create reader that writes to that registry
+		reg := prometheus.NewRegistry()                          // create explicit registry
+		reader, err = otelprom.New(otelprom.WithRegisterer(reg), // create reader that writes to that registry
+			otelprom.WithProducer(runtime.NewProducer())) // add Go runtime histograms (scheduling latency)
 		metricHandler = promhttp.HandlerFor(reg, promhttp.HandlerOpts{}) // create handlers reading exactly that registry
 	case OTLPExporterConsole:
 		exp, err = stdoutmetric.New()
@@ -413,7 +421,8 @@ func newMeterProvider(
 		}
 
 		if exp != nil {
-			reader = metric.NewPeriodicReader(exp)
+			// the producer adds Go runtime histograms (scheduling latency)
+			reader = metric.NewPeriodicReader(exp, metric.WithProducer(runtime.NewProducer()))
 		}
 
 		if reader != nil {

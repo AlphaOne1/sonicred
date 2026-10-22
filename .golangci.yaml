@@ -65,6 +65,7 @@ linters:
                         - "github.com/prometheus/client_golang/prometheus"
                         - "go.opentelemetry.io/contrib/bridges/otelslog"
                         - "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+                        - "go.opentelemetry.io/contrib/instrumentation/runtime"
                         - "go.opentelemetry.io/otel"
                         - "go.opentelemetry.io/otel/attribute"
                         - "go.opentelemetry.io/otel/exporters/otlp/otlplog"

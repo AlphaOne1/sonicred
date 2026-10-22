@@ -3,12 +3,13 @@ SPDX-FileCopyrightText: 2026 The SonicRed contributors.
 SPDX-License-Identifier: MPL-2.0
 */ -}}
 
+{{- include "monitoring.validateGrafanaAdmin" . }}
 apiVersion: v1
 kind:       ConfigMap
 metadata:
     name: {{ include "monitoring.fullname" . }}-datasources
     labels:
-    {{- include "monitoring.labels" . | nindent 4 }}
+        {{- include "monitoring.labels" . | nindent 8 }}
         # This label tells the Grafana sidecar to load this ConfigMap
         grafana_datasource: "1"
 data:
@@ -17,17 +18,17 @@ data:
         datasources:
             -   name:      VictoriaMetrics
                 uid:       victoriametrics
-                type:      prometheus
-                url:       http://{{ include "monitoring.fullname" . }}-metrics-server:8428
+                type:      victoriametrics-metrics-datasource
+                url:       http://{{ include "monitoring.victoriaServer" (dict "ctx" . "alias" "metrics") }}:8428
                 access:    proxy
                 isDefault: true
             -   name:   VictoriaLogs
                 uid:    victorialogs
                 type:   victoriametrics-logs-datasource
-                url:    http://{{ include "monitoring.fullname" . }}-logs-server:9428
+                url:    http://{{ include "monitoring.victoriaServer" (dict "ctx" . "alias" "logs") }}:9428
                 access: proxy
             -   name:   VictoriaTraces
                 uid:    victoriatraces
                 type:   jaeger
-                url:    http://{{ include "monitoring.fullname" . }}-traces-server:10428/select/jaeger
+                url:    http://{{ include "monitoring.victoriaServer" (dict "ctx" . "alias" "traces") }}:10428/select/jaeger
                 access: proxy

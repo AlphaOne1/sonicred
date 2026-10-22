@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: 2026 The SonicRed contributors.
+# SPDX-License-Identifier: MPL-2.0
+
+# REUSE license files are not needed in the chart package
+*.license
