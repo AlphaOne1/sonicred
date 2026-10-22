@@ -56,12 +56,32 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
+Service name of a Victoria* single-node server subchart (metrics, logs, traces).
+Mirrors the naming of "vm.plain.fullname" in the victoria-metrics-common chart.
+Usage: include "monitoring.victoriaServer" (dict "ctx" . "alias" "metrics")
 */}}
-{{- define "monitoring.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "monitoring.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
+{{- define "monitoring.victoriaServer" -}}
+{{- $values := index .ctx.Values .alias | default dict -}}
+{{- $server := $values.server | default dict -}}
+{{- if $server.fullnameOverride -}}
+{{-     $server.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{-     $fullname := $values.fullnameOverride -}}
+{{-     if not $fullname -}}
+{{-         $name := default .alias $values.nameOverride -}}
+{{-         $relName := .ctx.Release.Name -}}
+{{-         $fullname = ternary $relName (printf "%s-%s" $relName $name) (contains $name $relName) -}}
+{{-     end -}}
+{{-     printf "%s-server" ($fullname | trunc 63 | trimSuffix "-") | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Fails the rendering if no Grafana admin password is given.
+*/}}
+{{- define "monitoring.validateGrafanaAdmin" -}}
+{{- $admin := .Values.grafana.admin | default dict -}}
+{{- if not $admin.existingSecret -}}
+{{-     $_ := required "monitoring.grafana.adminPassword must be set, e.g. with --set monitoring.grafana.adminPassword=<...>" .Values.grafana.adminPassword -}}
+{{- end -}}
+{{- end -}}

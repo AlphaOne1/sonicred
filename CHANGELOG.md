@@ -2,6 +2,21 @@
      SPDX-License-Identifier: MPL-2.0
 -->
 
+Release 1.11.3
+==============
+
+- added Go runtime metrics (OpenTelemetry runtime instrumentation)
+- fixed service references between the helm monitoring subcharts
+- fixed log and trace forwarding from Alloy to VictoriaLogs and VictoriaTraces
+- disabled the unintentionally deployed Vector DaemonSet in the helm chart
+- grafana now uses the VictoriaMetrics datasource and ships a Go runtime
+  dashboard
+- the helm chart now requires a Grafana admin password if monitoring is enabled
+- fixed VictoriaLogs and VictoriaTraces not starting due to a too short retention
+  period in the helm chart
+- the helm chart now sets the pod name as a service instance in the OpenTelemetry
+  resource attributes
+
 Release 1.11.2
 ==============
 
