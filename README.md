@@ -163,7 +163,7 @@ Getting Started
 | -tlskey         \<keyfile\>  | TLS key file                                       | n/a               |          |
 | -clientca       \<cafile\>   | client certificate authority for mTLS              | n/a               | &check;  |
 | -acmedomain     \<domain\>   | allowed domain for automatic certificate retrieval | n/a               | &check;  |
-| -certcache      \<path\>     | directory for certificate cache                    | os temp directory |          |
+| -certcache      \<path\>     | directory for certificate cache                    | user cache dir    |          |
 | -acmeendpoint   \<url\>      | endpoint for automatic certificate retrieval       | n/a               |          |
 | -index          {true,false} | enable directory listing                           | true              |          |
 | -header         \<header\>   | additional header                                  | n/a               | &check;  |
@@ -218,6 +218,8 @@ HTTPS
 1. Manually provide a certificate and a key
 2. Enable automatic certificate retrieval via [Let's Encrypt](https://letsencrypt.org)
 
+In both cases, *SonicRed* only accepts TLS 1.3 connections.
+
 
 ### Manual Configuration
 
@@ -245,8 +247,17 @@ for which certificate retrieval is allowed. When a client connects to one of the
 *SonicRed* sends a certificate request to Let's Encrypt. The valid domains can be specified via the `-acmedomain`
 parameter. Only exact domains match, so subdomains must be provided with repeated calls.
 
+The certificates are obtained using the TLS-ALPN-01 challenge. For this, Let's Encrypt connects to port 443 of the
+requested domain, so *SonicRed* must be reachable from the internet on port 443. Either let *SonicRed* listen on this
+port using `-port 443` (this usually requires additional privileges, e.g., the `CAP_NET_BIND_SERVICE` capability), or
+forward port 443 to the port *SonicRed* listens on. The forwarding must not terminate TLS, e.g., a NAT port forwarding
+or a TCP proxy.
+
 Once a certificate is obtained, it is stored in a certificate cache. By default, this cache is in the
-operating system's default temporary directory. It can be changed using the `-certcache` parameter.
+`sonicred/autocert` directory inside the user cache directory, e.g., `~/.cache/sonicred/autocert` on Linux. It can be
+changed using the `-certcache` parameter. As the cache contains private keys, it must not be located inside the web
+root directory (`-root`) and should not be accessible by other users. In the Docker image, the cache is in
+`/tmp/.cache`, mount a volume and set `-certcache` accordingly to keep the certificates across container restarts.
 
 To start *SonicRed* using automatic certificate retrieval, use the following command:
 

@@ -7,7 +7,7 @@ on:
     release:
         types:
           - prereleased
-          - published
+          - released
 
 permissions: read-all
 
@@ -55,6 +55,8 @@ jobs:
             uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
             with:
                 go-version-file: go.mod
+                # no caches for release builds, they could be poisoned by other workflow runs
+                cache: false
 
           - name: Install nfpm
             if: matrix.os == 'linux'
@@ -238,8 +240,8 @@ jobs:
                 platforms: linux/amd64,linux/arm64
                 pull: true
                 push: true
-                cache-from: type=gha
-                cache-to: type=gha,mode=max
+                # no caches for release builds, they could be poisoned by other workflow runs
+                no-cache: true
                 build-args: |
                     VERSION=${{ github.event.release.tag_name }}
                     REVISION=${{ github.sha }}
@@ -247,17 +249,21 @@ jobs:
                 tags: |
                     ${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
                     ${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}-${{ github.sha }}
-                    ${{ env.IMAGE_NAME }}:latest
+                    ${{ !github.event.release.prerelease && format('{0}:latest', env.IMAGE_NAME) || '' }}
 
           - name: Inspect final manifests
             env:
                 TAG_NAME: ${{ github.event.release.tag_name }}
+                PRERELEASE: ${{ github.event.release.prerelease }}
             run: |
                 set -euo pipefail
 
                 docker manifest inspect "${IMAGE_NAME}:${TAG_NAME}"
                 docker manifest inspect "${IMAGE_NAME}:${TAG_NAME}-${{ github.sha }}"
-                docker manifest inspect "${IMAGE_NAME}:latest"
+
+                if [ "${PRERELEASE}" != "true" ]; then
+                    docker manifest inspect "${IMAGE_NAME}:latest"
+                fi
 
     ChecksumReleaseAssets:
         needs: Build
@@ -287,6 +293,8 @@ jobs:
                 cd release-assets
                 # gets all assets of the release
                 gh release download "$TAG_NAME" --clobber
+                # provenance of a previous run of this release (e.g. re-run) must not become a subject itself
+                rm -f -- *.intoto.jsonl
                 echo "Downloaded assets:"
                 ls -lah
 

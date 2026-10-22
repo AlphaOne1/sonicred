@@ -14,6 +14,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"path"
 	"path/filepath"
 	"strings"
@@ -23,6 +24,20 @@ import (
 
 //go:embed dir_index.css dir_index.js dir_index.html.tmpl
 var directoryListingTemplate embed.FS
+
+// translationKeys maps the lower case language tags to the keys of Translations, as language tags are
+// case-insensitive.
+//
+//nolint:gochecknoglobals // derived from Translations, built once
+var translationKeys = func() map[string]string {
+	keys := make(map[string]string, len(Translations))
+
+	for key := range Translations {
+		keys[strings.ToLower(key)] = key
+	}
+
+	return keys
+}()
 
 // FileEntry represents an entry in a directory, containing its name, file information,
 // and symlink target if applicable.
@@ -59,6 +74,18 @@ func tindent(numTabs int, lines string) string {
 	}
 
 	return strings.Join(parts, "\n")
+}
+
+// pathEscape escapes each segment of the given slash-separated path, so that characters like ?, # or % in
+// file or directory names do not alter the meaning of the resulting URL.
+func pathEscape(urlPath string) string {
+	parts := strings.Split(urlPath, "/")
+
+	for i, part := range parts {
+		parts[i] = url.PathEscape(part)
+	}
+
+	return strings.Join(parts, "/")
 }
 
 // cleanRequestPath cleans the URL path by trimming leading and trailing slashes.
@@ -126,7 +153,7 @@ func processLink(
 	return linkTarget, true
 }
 
-// preCheck handles the initial request validation, directory checks, and language redirection logic for HTTP requests.
+// preCheck handles the initial request validation and directory checks for HTTP requests.
 func preCheck(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -152,26 +179,6 @@ func preCheck(
 	// if we should not generate the index.html, we deny the listing at this point
 	if !enable {
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		return false
-	}
-
-	if _, translationFound := Translations[r.URL.Query().Get("lang")]; !translationFound {
-		lang, _ := getTranslation(r)
-
-		query := r.URL.Query()
-		query.Set("lang", lang)
-
-		redirectPath := "/" + strings.TrimLeft(urlPath, "/")
-
-		if redirectPath == "/." {
-			redirectPath = "/"
-		}
-
-		redirectPath += "?" + query.Encode()
-
-		w.Header().Add("Vary", "Accept-Language")
-		http.Redirect(w, r, redirectPath, http.StatusTemporaryRedirect) //nolint:gosec // G710: same-origin path
-
 		return false
 	}
 
@@ -223,30 +230,45 @@ func collectDirectoryEntries(fsys fs.StatFS, path, basePath, rootPath string) ([
 	return entries, nil
 }
 
+// lookupTranslation searches the translation for the given language tag, ignoring its case. If there is no
+// translation for the complete tag, its subtags are removed from the end until a translation is found, e.g.
+// zh-Hant-TW, zh-Hant, zh (lookup as in RFC 4647). It returns the key of the found translation.
+func lookupTranslation(tag string) (string, Translation, bool) {
+	candidate := strings.ToLower(tag)
+
+	for {
+		if key, found := translationKeys[candidate]; found {
+			return key, Translations[key], true
+		}
+
+		idx := strings.LastIndex(candidate, "-")
+
+		if idx < 0 {
+			return "", Translation{}, false
+		}
+
+		candidate = candidate[:idx]
+
+		// a single character subtag, e.g. x for private use, is removed together with the subtag following it
+		if idx := strings.LastIndex(candidate, "-"); idx >= 0 && idx == len(candidate)-2 {
+			candidate = candidate[:idx]
+		}
+	}
+}
+
 // getTranslation determines the preferred language from the HTTP request and retrieves the corresponding translation.
+// The lang query parameter takes precedence over the Accept-Language header.
 // If no match is found, it defaults to "en" and returns the English translation.
 func getTranslation(r *http.Request) (string, Translation) {
-	requestedLang := r.URL.Query().Get("lang")
-
-	if t, found := Translations[requestedLang]; found {
-		return requestedLang, t
+	if key, t, found := lookupTranslation(r.URL.Query().Get("lang")); found {
+		return key, t
 	}
 
 	langPrefs := utils.ParseLanguageHeader(r.Header.Get("Accept-Language"))
 
 	for _, lang := range langPrefs {
-		// first we look for the exact variant
-		t, found := Translations[lang.Variant]
-
-		if found {
-			return lang.Variant, t
-		}
-
-		// then we look, if we find the base language
-		t, found = Translations[lang.Lang]
-
-		if found {
-			return lang.Lang, t
+		if key, t, found := lookupTranslation(lang.Variant); found {
+			return key, t
 		}
 	}
 
@@ -293,11 +315,12 @@ func buildDirectoryListingParams(urlPath, basePath string, entries []FileEntry, 
 func DirIndex(fsys fs.StatFS, enable bool, basePath, rootPath string) (func(http.Handler) http.Handler, error) {
 	tmpl := template.New("dir_index.html.tmpl")
 	tmpl.Funcs(template.FuncMap{
-		"render":   renderGen(tmpl),
-		"tindent":  tindent,
-		"safeJS":   func(s string) template.JS { return template.JS(s) },     //nolint:gosec // we control the input
-		"safeCSS":  func(s string) template.CSS { return template.CSS(s) },   //nolint:gosec // we control the input
-		"safeHTML": func(s string) template.HTML { return template.HTML(s) }, //nolint:gosec // we control the input
+		"render":     renderGen(tmpl),
+		"tindent":    tindent,
+		"pathEscape": pathEscape,
+		"safeJS":     func(s string) template.JS { return template.JS(s) },     //nolint:gosec // we control the input
+		"safeCSS":    func(s string) template.CSS { return template.CSS(s) },   //nolint:gosec // we control the input
+		"safeHTML":   func(s string) template.HTML { return template.HTML(s) }, //nolint:gosec // we control the input
 	})
 	tmpl, err := tmpl.ParseFS(directoryListingTemplate, "*")
 
@@ -341,6 +364,8 @@ func DirIndex(fsys fs.StatFS, enable bool, basePath, rootPath string) (func(http
 			}
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			// the language of the listing depends on the Accept-Language header, if no lang parameter is given
+			w.Header().Add("Vary", "Accept-Language")
 
 			if written, err := io.Copy(w, &outBuf); err != nil {
 				slog.Error("could not fully send directory listing",

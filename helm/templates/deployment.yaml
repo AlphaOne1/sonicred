@@ -43,15 +43,12 @@ spec:
                     imagePullPolicy: {{ .Values.image.pullPolicy }}
                     ports:
                         -   name: http
-                            containerPort: {{ .Values.service.port }}
+                            containerPort: 8080
                             protocol: TCP
                         -   name: metrics
-                            containerPort: {{ .Values.service.metricsPort }}
+                            containerPort: 8081
                             protocol: TCP
                 {{- if .Values.monitoring.enabled }}
-                    {{- $alloyHost := default (printf "%s-alloy" .Release.Name)
-                                              (dig "monitoring" "alloy" "fullnameOverride" ""
-                                                   ( .Values | toYaml | fromYaml )) }}
                     env:
                         -   name: POD_NAME
                             valueFrom:
@@ -73,7 +70,7 @@ spec:
                         -   name: OTEL_EXPORTER_OTLP_PROTOCOL
                             value: grpc
                         -   name: OTEL_EXPORTER_OTLP_ENDPOINT
-                            value: http://{{ $alloyHost }}:4317
+                            value: http://{{ include "SonicRed.alloyHost" . }}:4317
                 {{- end }}
                     livenessProbe:
                         {{- toYaml .Values.livenessProbe | nindent 24 }}

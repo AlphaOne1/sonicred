@@ -243,7 +243,7 @@ func (g *Group) handleServerCycle(ctx context.Context, server *http.Server, list
 		}
 
 		select {
-		case <-time.After(serverShutdownTimeout):
+		case <-time.After(g.shutdownTimeout):
 			// this is a timeout applied _after_ the shutdown timeout of Shutdown
 			g.log.Info("server shutdown timed out", slog.String("name", serverName))
 		case err := <-serveErrCh:

@@ -39,6 +39,12 @@ func TestParseLanguageHeader(t *testing.T) {
 				{Lang: "es", Variant: "es", Pref: 0.1},
 			},
 		},
+		{
+			in: "de;q=0,fr;q=0.000,en;q=0.1",
+			want: []utils.LangPref{
+				{Lang: "en", Variant: "en", Pref: 0.1},
+			},
+		},
 	}
 
 	for i, test := range tests {

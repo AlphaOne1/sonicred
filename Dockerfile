@@ -12,7 +12,7 @@
 
 ARG USER=appuser
 
-FROM ubuntu:latest@sha256:f144425ff09be612d6d9ad965196e9cdc23dae1f42110a8a11a3e9a8198759f7 AS builder
+FROM ubuntu:latest@sha256:c098726dd9b9733f3e885f8de0ef375206a311b0a317eadc40d347b1115fb944 AS builder
 
 ARG TARGETARCH
 ARG USER
@@ -117,9 +117,11 @@ COPY --from=builder /tmp/root   /
 # if no volume is mounted, a standard documentation page is shown.
 # This page is overlayed by later mounts.
 VOLUME  /www
+# XDG_CACHE_HOME keeps the default certificate cache out of HOME, which is the served root directory
 ENV     HOME=/www \
         PATH=/bin \
-        TMPDIR=/tmp
+        TMPDIR=/tmp \
+        XDG_CACHE_HOME=/tmp/.cache
 WORKDIR /www
 
 EXPOSE  8080/tcp  \

@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2026 The SonicRed contributors.
 // SPDX-License-Identifier: MPL-2.0
 
+// locale is the language of the listing, it is used for sorting and date formatting
+function locale() {
+	return document.documentElement.lang || undefined;
+}
+
 function sortTable(columnIndex) {
 	const table = document.querySelector(".directoryListing");
 	const tbody = table.tBodies[0];
@@ -43,7 +48,7 @@ function sortTable(columnIndex) {
 			bVal = b.cells[columnIndex].textContent.trim();
 		}
 
-		return aVal.localeCompare(bVal, undefined, {numeric: true, sensitivity: 'base'}) * direction;
+		return aVal.localeCompare(bVal, locale(), {numeric: true, sensitivity: 'base'}) * direction;
 	})
 
 	// set new sort order
@@ -64,7 +69,7 @@ function updateTimeValues() {
 			const date = new Date(isoStr);
 			// check if date is valid
 			if (!isNaN(date.getTime())) {
-				el.textContent = date.toLocaleString( undefined, {
+				el.textContent = date.toLocaleString(locale(), {
 					year: 'numeric',
 					month: '2-digit',
 					day: '2-digit',

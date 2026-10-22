@@ -1,6 +1,22 @@
 # SPDX-FileCopyrightText: 2026 The SonicRed contributors.
 # SPDX-License-Identifier: MPL-2.0
 
+networkPolicy:
+    grafana:
+        # Sources allowed to reach Grafana on port 3000. The default allows access from everywhere, as Grafana is
+        # meant to be reachable once deployed. Note that an empty list also allows access from everywhere, as this is
+        # the meaning of an empty source list in Kubernetes. To restrict access, e.g., to the namespace of the ingress
+        # controller:
+        #   from:
+        #       -   namespaceSelector:
+        #               matchLabels:
+        #                   kubernetes.io/metadata.name: ingress-nginx
+        from:
+            -   ipBlock:
+                    cidr: 0.0.0.0/0
+            # ipBlock does not reliably cover pod traffic (e.g. ingress controllers), depending on the CNI
+            -   namespaceSelector: { }
+
 grafana:
 #    fullnameOverride: "monitoring-grafana"
     sidecar:
@@ -33,6 +49,29 @@ alloy:
             create:  false
             name:    alloy-collector-config
             key:     config
+        # Alloy only receives OTLP here and does not need host access, so it can run without root privileges.
+        # 473 is the alloy user of the image.
+        securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem:   true
+            capabilities:
+                drop:
+                    - ALL
+            runAsNonRoot: true
+            runAsUser:    473
+            runAsGroup:   473
+            seccompProfile:
+                type: RuntimeDefault
+        # writable storage path (alloy.storagePath) for the read-only root filesystem
+        mounts:
+            extra:
+                -   name:      alloy-storage
+                    mountPath: /tmp/alloy
+    controller:
+        volumes:
+            extra:
+                -   name:     alloy-storage
+                    emptyDir: { }
 
 metrics:
 #    fullnameOverride: "monitoring-metrics"

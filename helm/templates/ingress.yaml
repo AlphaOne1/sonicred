@@ -42,7 +42,7 @@ spec:
                             service:
                                 name: {{ include "SonicRed.fullname" $ }}
                                 port:
-                                    number: {{ $.Values.service.port }}
+                                    number: 8080
                 {{- end }}
         {{- end }}
 {{- end }}

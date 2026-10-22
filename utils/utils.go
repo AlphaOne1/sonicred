@@ -48,6 +48,11 @@ func ParseLanguageHeader(langHeader string) []LangPref {
 				pref = 1
 			}
 
+			// a preference of 0 marks the language as not acceptable
+			if pref == 0 {
+				continue
+			}
+
 			langs = append(langs, LangPref{
 				Lang:    matches[2],
 				Variant: matches[1],

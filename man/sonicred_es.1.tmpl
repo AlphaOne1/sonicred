@@ -62,15 +62,19 @@ Establece el certificado TLS
 Establece la clave TLS
 .TP
 .I \-clientca archivo
-Establece un certificado de autoridad de certificación para la validación de certificados de clientes;\
- se puede indicar varias veces.
+Establece un certificado de autoridad de certificación para la validación de certificados de clientes;
+se puede indicar varias veces.
 .TP
 .I \-acmedomain dominio
 Establece el dominio permitido para la obtención automática de certificados; se puede indicar varias veces.
+Los certificados se obtienen mediante el desafío TLS-ALPN-01, por lo que SonicRed debe ser accesible en el puerto 443,
+ya sea directamente o mediante una redirección de puertos que no termine TLS.
 .TP
 .I \-certcache ruta
-Establece el directorio para la caché de certificados. Por defecto se configura en el
-.BR directorio\ predeterminado\ para\ archivos\ temporales\ del\ sistema\ operativo.
+Establece el directorio para la caché de certificados. No debe estar dentro del directorio raíz web indicado con \-root. Por defecto se
+configura en
+.BR sonicred/autocert
+dentro del directorio de caché del usuario.
 .TP
 .I \-acmeendpoint url
 Establece otro punto final para la obtención automática de certificados.
