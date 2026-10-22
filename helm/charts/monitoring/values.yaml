@@ -8,29 +8,13 @@ grafana:
             enabled: true
             # This label is important! The sidecar looks for it.
             label: grafana_datasource
+        dashboards:
+            enabled: true
+            # This label is important! The sidecar looks for it.
+            label: grafana_dashboard
     plugins:
         - victoriametrics-metrics-datasource
         - victoriametrics-logs-datasource
-    dashboardProviders:
-        dashboardproviders.yaml:
-            apiVersion: 1
-            providers:
-                -   name:            'default'
-                    orgId:           1
-                    folder:          ''
-                    type:            file
-                    disableDeletion: false
-                    editable:        true
-                    options:
-                        path: /var/lib/grafana/dashboards/default
-    dashboards:
-        default:
-            golang:
-                gnetId: 6671
-                revision: 2
-                datasource:
-                    -   name: DS_PROMETHEUS
-                        value: victoriametrics
 
 alloy:
 #    fullnameOverride: "monitoring-alloy"
@@ -63,11 +47,15 @@ logs:
     server:
         persistentVolume:
             enabled: false
-        retentionPeriod: 1h
+        retentionPeriod: 1d # minimum allowed by VictoriaLogs
+    # Logs are shipped by Alloy. Must be disabled explicitly, the default of the subchart is not
+    # applied to the dependency condition.
+    vector:
+        enabled: false
 
 traces:
-#    fullnameOverride: "monitoring-vt-single" # must fit to the service name in the subchart
+#    fullnameOverride: "monitoring-traces"
     server:
         persistentVolume:
             enabled: false
-        retentionPeriod: 1h
+        retentionPeriod: 1d # minimum allowed by VictoriaTraces

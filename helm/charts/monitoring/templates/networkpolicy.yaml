@@ -59,6 +59,8 @@ spec:
         -   from:
                 -   ipBlock:
                         cidr: 0.0.0.0/0
+                # ipBlock does not reliably cover pod traffic (e.g. ingress controllers), depending on the CNI
+                -   namespaceSelector: { }
             ports:
                 -   protocol: TCP
                     port:     3000

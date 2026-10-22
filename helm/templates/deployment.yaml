@@ -53,6 +53,17 @@ spec:
                                               (dig "monitoring" "alloy" "fullnameOverride" ""
                                                    ( .Values | toYaml | fromYaml )) }}
                     env:
+                        -   name: POD_NAME
+                            valueFrom:
+                                fieldRef:
+                                    fieldPath: metadata.name
+                        -   name: POD_NAMESPACE
+                            valueFrom:
+                                fieldRef:
+                                    fieldPath: metadata.namespace
+                        # service.instance.id becomes the instance label of the metrics
+                        -   name: OTEL_RESOURCE_ATTRIBUTES
+                            value: service.instance.id=$(POD_NAME),k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(POD_NAMESPACE)
                         -   name: OTEL_LOGS_EXPORTER
                             value: otlp
                         -   name: OTEL_METRICS_EXPORTER
