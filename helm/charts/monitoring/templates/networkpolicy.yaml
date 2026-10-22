@@ -17,6 +17,12 @@ spec:
     ingress:
         -   from:
                 -   podSelector: { } # Allows all pods in the same namespace (e.g., SonicRed)
+            # only OTLP, the Alloy UI (12345) stays reachable via kubectl port-forward
+            ports:
+                -   protocol: TCP
+                    port:     4317
+                -   protocol: TCP
+                    port:     4318
 
 ---
 # Victoria Instances: Access restricted to Alloy (Write) and Grafana (Read)
@@ -57,8 +63,7 @@ spec:
         - Ingress
     ingress:
         -   from:
-                -   ipBlock:
-                        cidr: 0.0.0.0/0
+                {{- toYaml .Values.networkPolicy.grafana.from | nindent 16 }}
             ports:
                 -   protocol: TCP
                     port:     3000

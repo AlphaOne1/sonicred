@@ -66,3 +66,22 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Service name of the Alloy collector of the monitoring subchart.
+Mirrors the naming of "alloy.fullname" in the alloy chart.
+*/}}
+{{- define "SonicRed.alloyHost" -}}
+{{- $monitoring := .Values.monitoring | default dict -}}
+{{- $alloy := $monitoring.alloy | default dict -}}
+{{- if $alloy.fullnameOverride -}}
+{{-     $alloy.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{-     $name := default "alloy" $alloy.nameOverride -}}
+{{-     if contains $name .Release.Name -}}
+{{-         .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{-     else -}}
+{{-         printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{-     end -}}
+{{- end -}}
+{{- end }}

@@ -62,15 +62,18 @@ Setzt das TLS-Zertifikat
 Setzt den TLS-Schlüssel
 .TP
 .I \-clientca datei
-Setzt ein Zertifikat einer Zertifizierungsstelle zur Prüfung der Clientzertifikate.\
- Diese Option darf mehrfach angegeben werden.
+Setzt ein Zertifikat einer Zertifizierungsstelle zur Prüfung der Clientzertifikate.
+Diese Option darf mehrfach angegeben werden.
 .TP
 .I \-acmedomain domain
 Setzt erlaubte Domäne für automatische Zertifikatsbeschaffung. Diese Option darf mehrfach angegeben werden.
+Zertifikate werden über die TLS-ALPN-01-Challenge beschafft, SonicRed muss daher auf Port 443 erreichbar sein,
+entweder direkt oder über eine Portweiterleitung, die TLS nicht terminiert.
 .TP
 .I \-certcache pfad
-Setzt Verzeichnis für Zertifikatscache. Standardmäßig auf
-.BR Standardverzeichnis\ für\ temporäre\ Dateien\ des\ Betriebssystems.
+Setzt Verzeichnis für Zertifikatscache. Es darf nicht innerhalb des mit \-root angegebenen Web-Wurzelverzeichnisses liegen. Standardmäßig auf
+.BR sonicred/autocert
+im Cache-Verzeichnis des Benutzers.
 .TP
 .I \-acmeendpoint url
 Setzt einen anderen Endpunkt für die automatische Zertifikatsbeschaffung.

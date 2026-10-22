@@ -117,9 +117,11 @@ COPY --from=builder /tmp/root   /
 # if no volume is mounted, a standard documentation page is shown.
 # This page is overlayed by later mounts.
 VOLUME  /www
+# XDG_CACHE_HOME keeps the default certificate cache out of HOME, which is the served root directory
 ENV     HOME=/www \
         PATH=/bin \
-        TMPDIR=/tmp
+        TMPDIR=/tmp \
+        XDG_CACHE_HOME=/tmp/.cache
 WORKDIR /www
 
 EXPOSE  8080/tcp  \

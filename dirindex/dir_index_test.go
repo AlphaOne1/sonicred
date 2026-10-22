@@ -102,6 +102,10 @@ func TestHasIndexFile(t *testing.T) {
 //	|  +--"file.html"
 //	|  '--"link.html"
 //	|
+//	+--"spe#cial"
+//	|  |
+//	|  '--"a?b%20c.txt"
+//	|
 //	'--"withIndex"
 //	   |
 //	   '--"index.html"
@@ -121,6 +125,14 @@ func indexCreateFS(t *testing.T) (*os.Root, string) {
 
 	if err := tmpFS.Mkdir("noIndex", 0755); err != nil {
 		t.Fatalf("could not create directory: %v", err)
+	}
+
+	if err := tmpFS.Mkdir("spe#cial", 0755); err != nil {
+		t.Fatalf("could not create directory: %v", err)
+	}
+
+	if err := tmpFS.WriteFile("spe#cial/a?b%20c.txt", []byte("special-content"), 0400); err != nil {
+		t.Fatalf("could not write to spe#cial/a?b%%20c.txt: %v", err)
 	}
 
 	if err := tmpFS.WriteFile("withIndex/index.html", []byte("index-content"), 0400); err != nil {
@@ -205,6 +217,24 @@ func TestCollectDirectoryEntries(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
+			path:         "/spe%23cial?lang=en",
+			indexEnabled: true,
+			want: []string{
+				"<title> /spe#cial </title>",
+				`<td><a href="/"> .. </a></td>`,
+				`<td><a href="/spe%23cial/a%3Fb%2520c.txt"> <span class="icon" aria-hidden="true">📄</span> a?b%20c.txt </a></td>`,
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			path:         "/spe%23cial/a%3Fb%2520c.txt",
+			indexEnabled: true,
+			want: []string{
+				"special-content",
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
 			path:         "/noIndex/file.html",
 			indexEnabled: true,
 			want: []string{
@@ -272,6 +302,81 @@ func TestCollectDirectoryEntries(t *testing.T) {
 				if strings.Contains(rec.Body.String(), dontWant) {
 					t.Errorf("did not expect %q in response body but got %q", dontWant, rec.Body.String())
 				}
+			}
+		})
+	}
+}
+
+func TestLanguageSelection(t *testing.T) {
+	t.Parallel()
+
+	if runtime.GOOS == "windows" {
+		t.Skip("windows not supported yet")
+	}
+
+	tests := []struct {
+		basePath       string
+		path           string
+		acceptLanguage string
+		wantLanguage   string
+	}{
+		{basePath: "/", path: "/", wantLanguage: "en"},
+		{basePath: "/", path: "/noIndex", acceptLanguage: "de-DE,de;q=0.9", wantLanguage: "de"},
+		{basePath: "/files/", path: "/noIndex/", acceptLanguage: "fr", wantLanguage: "fr"},
+		{basePath: "/", path: "/", acceptLanguage: "zh-tw", wantLanguage: "zh-TW"},
+		{basePath: "/", path: "/", acceptLanguage: "zh-Hant-HK", wantLanguage: "zh-Hant"},
+		{basePath: "/", path: "/", acceptLanguage: "sr-Latn-RS", wantLanguage: "sr-Latn"},
+		{basePath: "/", path: "/", acceptLanguage: "de-x-private", wantLanguage: "de"},
+		{basePath: "/", path: "/", acceptLanguage: "de;q=0,fr;q=0.5", wantLanguage: "fr"},
+		{basePath: "/", path: "/", acceptLanguage: "xx-YY", wantLanguage: "en"},
+		{basePath: "/", path: "/?lang=de-ch", acceptLanguage: "fr", wantLanguage: "de-CH"},
+		{basePath: "/", path: "/?lang=xx", acceptLanguage: "es", wantLanguage: "es"},
+	}
+
+	indexFS, indexDirName := indexCreateFS(t)
+
+	if indexFS == nil {
+		t.Fatal("could not create index test filesystem")
+	}
+
+	directory, casted := indexFS.FS().(fs.StatFS)
+
+	if !casted {
+		t.Fatal("directory does not implement fs.StatFS")
+	}
+
+	for testNum, test := range tests {
+		t.Run(fmt.Sprintf("TestLanguageSelection-%d", testNum), func(t *testing.T) {
+			t.Parallel()
+
+			// the request path is given as seen after the basePath was stripped
+			testHandler := midgard.StackMiddlewareHandler(
+				[]defs.Middleware{
+					helper.Must(dirindex.DirIndex(directory, true, test.basePath, indexDirName)),
+				},
+				http.FileServerFS(
+					directory,
+				))
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, test.path, nil)
+
+			if test.acceptLanguage != "" {
+				req.Header.Set("Accept-Language", test.acceptLanguage)
+			}
+
+			testHandler.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusOK {
+				t.Errorf("got status %d but wanted %d", rec.Code, http.StatusOK)
+			}
+
+			if want := fmt.Sprintf(`<html lang="%s"`, test.wantLanguage); !strings.Contains(rec.Body.String(), want) {
+				t.Errorf("expected %q in response body but got %q", want, rec.Body.String())
+			}
+
+			if got := rec.Header().Get("Vary"); got != "Accept-Language" {
+				t.Errorf("got Vary header %q but wanted %q", got, "Accept-Language")
 			}
 		})
 	}

@@ -16,5 +16,8 @@ spec:
       - name: wget
         image: busybox
         command: ['wget']
-        args: ['{{ include "SonicRed.fullname" . }}:{{ .Values.service.port }}']
+        # the response is discarded, as the root filesystem is read-only
+        args: ['-q', '-O', '/dev/null', '{{ include "SonicRed.fullname" . }}:8080']
+        securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
     restartPolicy: Never

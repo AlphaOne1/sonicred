@@ -66,10 +66,13 @@ Set a certificate authority certificate for client certificate validation. This 
 .TP
 .I \-acmedomain domain
 Set allowed domain for automatic certificate retrieval. This option may be repeated.
+Certificates are obtained using the TLS-ALPN-01 challenge, so SonicRed must be reachable on port 443,
+either directly or via a port forwarding that does not terminate TLS.
 .TP
 .I \-certcache path
-Set directory for certificate cache. Defaults to
-.BR operating\ system\ default\ temp\ directory.
+Set directory for certificate cache. It must not be inside of the web root directory given with \-root. Defaults to
+.BR sonicred/autocert
+inside the user cache directory.
 .TP
 .I \-acmeendpoint url
 Set other endpoint for automatic certificate retrieval.

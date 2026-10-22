@@ -46,19 +46,19 @@ SPDX-License-Identifier: MPL-2.0
 		</thead>
 		<tbody>
 			{{- if .ParentDirectory }}
-			<tr><td><a href="{{ .ParentDirectory }}"> .. </a></td><td></td><td></td></tr>
+			<tr><td><a href="{{ pathEscape .ParentDirectory }}"> .. </a></td><td></td><td></td></tr>
 			{{- end -}}
 			{{- $dirPrefix := .DirectoryPrefix -}}
 			{{- range .Entries -}}
 			{{- $fi := .Info }}
-			<tr>{{ if $fi.IsDir -}}	<td><em><a href="{{ $dirPrefix }}/{{ .Name }}"> <span class="icon" aria-hidden="true">📁</span> {{ .Name }}/ </a></em></td>
+			<tr>{{ if $fi.IsDir -}}	<td><em><a href="{{ pathEscape $dirPrefix }}/{{ pathEscape .Name }}"> <span class="icon" aria-hidden="true">📁</span> {{ .Name }}/ </a></em></td>
 				{{- else if gt (len .LinkTarget) 0 -}}
 					{{- if eq (slice .LinkTarget 0 1) "/" -}}
-									<td><a href="{{ .LinkTarget }}"> <span class="icon" aria-hidden="true">🔗</span> {{ .Name }} &rarr; {{ .LinkTarget }} </a></td>
+									<td><a href="{{ pathEscape .LinkTarget }}"> <span class="icon" aria-hidden="true">🔗</span> {{ .Name }} &rarr; {{ .LinkTarget }} </a></td>
 					{{- else -}}
-									<td><a href="{{ $dirPrefix }}/{{ .Name }}"> <span class="icon" aria-hidden="true">🔗</span> {{ .Name }} &rarr; {{ .LinkTarget }} </a></td>
+									<td><a href="{{ pathEscape $dirPrefix }}/{{ pathEscape .Name }}"> <span class="icon" aria-hidden="true">🔗</span> {{ .Name }} &rarr; {{ .LinkTarget }} </a></td>
 					{{- end -}}
-				{{- else -}}		<td><a href="{{ $dirPrefix }}/{{ .Name }}"> <span class="icon" aria-hidden="true">📄</span> {{ .Name }} </a></td>
+				{{- else -}}		<td><a href="{{ pathEscape $dirPrefix }}/{{ pathEscape .Name }}"> <span class="icon" aria-hidden="true">📄</span> {{ .Name }} </a></td>
 				{{- end }}
 				<td> {{ $fi.Size    }} </td>
 				<td> <time class="auto-date" datetime="{{ $fi.ModTime.Format "2006-01-02T15:04:05Z07:00" }}">{{ $fi.ModTime.Format "2006-01-02 15:04:05 -07" }}</time> </td>

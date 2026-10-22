@@ -2,6 +2,58 @@
      SPDX-License-Identifier: MPL-2.0
 -->
 
+Release 1.11.3
+==============
+
+- added Go runtime metrics (OpenTelemetry runtime instrumentation)
+- fixed service references between the helm monitoring subcharts
+- fixed log and trace forwarding from Alloy to VictoriaLogs and VictoriaTraces
+- disabled the unintentionally deployed Vector DaemonSet in the helm chart
+- grafana now uses the VictoriaMetrics datasource and ships a Go runtime
+  dashboard
+- the helm chart now requires a Grafana admin password if monitoring is enabled
+- fixed VictoriaLogs and VictoriaTraces not starting due to a too short retention
+  period in the helm chart
+- the helm chart now sets the pod name as a service instance in the OpenTelemetry
+  resource attributes
+- the directory listing no longer redirects to add the `lang` parameter, the
+  language is selected directly from the `lang` parameter or the
+  `Accept-Language` header
+- language tags are matched case-insensitively, unknown variants and scripts
+  fall back step by step (e.g. `zh-Hant-TW` to `zh-Hant`), languages with
+  `q=0` are no longer selected
+- dates and sorting in the directory listing use the language of the listing
+- fixed links in the directory listing for names containing `?`, `#` or `%`
+- fixed the Serbian and Kurdish translations, Sorani moved to `ckb`, added
+  `zh-Hant` and `pa-Arab`
+- invalid client CA files now produce an error instead of an empty certificate
+  pool
+- automatic certificate retrieval via ACME now also requires TLS 1.3
+- fixed automatic certificate retrieval failing in combination with client
+  certificate authentication, the ACME challenge connections no longer require
+  a client certificate
+- documented that automatic certificate retrieval requires port 443 to be
+  reachable
+- the certificate cache now defaults to `sonicred/autocert` in the user cache
+  directory instead of the temporary directory
+- the certificate cache directory must not be inside the web root directory
+- the default certificate cache directory must be owned by and only be
+  accessible by the current user
+- `latest` docker image tag is no longer moved by prereleases, promoting a
+  prerelease to a release now triggers the release build
+- release builds no longer use the GitHub Actions caches
+- re-runs of the release pipeline no longer attest the provenance of a previous
+  run
+- the helm chart uses the fixed default ports 8080 and 8081, the values
+  `service.port` and `service.metricsPort` were removed
+- fixed the Alloy service name in the helm chart if the release name contains
+  `alloy` or the Alloy chart name is overridden
+- Alloy runs as non-root with a restrictive security context in the helm chart
+- the Alloy network policy only allows the OTLP ports
+- the helm test pod runs with a restrictive security context
+- the sources allowed to reach Grafana are configurable via
+  `monitoring.networkPolicy.grafana.from`
+
 Release 1.11.2
 ==============
 

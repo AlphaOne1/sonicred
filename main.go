@@ -129,7 +129,8 @@ func setupFlags() ServerConfig {
 	flag.StringVar(&config.TLSKey, "tlskey", "", "tls key file")
 	flag.Var(config.ClientCAs, "clientca", "client certificate authority file for mTLS")
 	flag.Var(config.AcmeDomains, "acmedomain", "domain for automatic certificate retrieval")
-	flag.StringVar(&config.CertCache, "certcache", os.TempDir(), "directory for certificate cache")
+	flag.StringVar(&config.CertCache, "certcache", "",
+		"directory for certificate cache, defaults to the user cache directory")
 	flag.StringVar(&config.AcmeEndpoint, "acmeendpoint", "", " acme endpoint to use")
 	flag.BoolVar(&config.IndexEnabled, "index", true, "enable directory listing")
 	flag.Var(config.Headers, "header", "additional HTTP header")
@@ -382,6 +383,17 @@ func run(signalShutdown context.Context) int {
 	}
 
 	slog.Info("registering handlers for FileServer")
+
+	if len(*config.AcmeDomains) > 0 {
+		certCache, certCacheErr := prepareCertCache(config.CertCache, config.RootPath)
+
+		if certCacheErr != nil {
+			slog.Error("invalid certificate cache", slog.String("error", certCacheErr.Error()))
+			return 1
+		}
+
+		config.CertCache = certCache
+	}
 
 	tlsConfig, tlsConfigErr := generateTLSConfig(
 		config.TLSCert,
