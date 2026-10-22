@@ -53,6 +53,7 @@ Release 1.11.3
 - the helm test pod runs with a restrictive security context
 - the sources allowed to reach Grafana are configurable via
   `monitoring.networkPolicy.grafana.from`
+- dependency updates
 
 Release 1.11.2
 ==============
