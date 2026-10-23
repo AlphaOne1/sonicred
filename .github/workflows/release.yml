@@ -51,11 +51,16 @@ jobs:
             with:
                 fetch-depth: 1
 
+          - name: Determine Go Version
+            id: gover
+            run: echo "minor=`go mod edit -json | jq -r .Go | cut -d. -f1,2`" >> "$GITHUB_OUTPUT"
+
           - name: Install Go
             uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
             with:
-                go-version-file: go.mod
+                go-version: ${{ steps.gover.outputs.minor }}.x
                 # no caches for release builds, they could be poisoned by other workflow runs
+                check-latest: true
                 cache: false
 
           - name: Install nfpm
