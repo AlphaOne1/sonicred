@@ -195,19 +195,19 @@ $ ./sonicred-linux-amd64 -root testroot/
    |   \(_)/  ___/ / /_/ / / / / / /__/ _, _/  __/ /_/ /
    |  , \_/  /____/\____/_/ /_/_/\___/_/ |_|\___/\__._/
    | / \           \
-   |/   \    _______\ Version: v1.11.1
-         \  |              of: 2026-08-26T16:50:43Z
-          \ |           using: go1.27.0
+   |/   \    _______\ Version: v1.11.3
+         \  |              of: 2026-10-22T23:33:40Z
+          \ |           using: go1.27.3
            \|
 
-time=2026-08-26T21:59:34.458618+02:00 level=INFO msg=logging level=info
-time=2026-08-26T21:59:34.458675+02:00 level=INFO msg="using root directory" root=testroot
-time=2026-08-26T21:59:34.458704+02:00 level=INFO msg="using base path" path=/
-time=2026-08-26T21:59:34.467557+02:00 level=INFO msg="telemetry initialized"
-time=2026-08-26T21:59:34.467604+02:00 level=INFO msg="registering handlers for FileServer"
-time=2026-08-26T21:59:34.469285+02:00 level=INFO msg="started server" address=:8080 t_init=11.613352ms
-time=2026-08-26T21:59:34.469327+02:00 level=INFO msg="waiting for servers to shutdown"
-time=2026-08-26T21:59:34.469378+02:00 level=INFO msg="server started" name=SonicRed addr=[::]:8080
+time=2026-10-23T02:04:30.092410+02:00 level=INFO msg=logging level=info
+time=2026-10-23T02:04:30.092610+02:00 level=INFO msg="using root directory" root=testroot
+time=2026-10-23T02:04:30.092638+02:00 level=INFO msg="using base path" path=/
+time=2026-10-23T02:04:30.094070+02:00 level=INFO msg="telemetry initialized"
+time=2026-10-23T02:04:30.094107+02:00 level=INFO msg="registering handlers for FileServer"
+time=2026-10-23T02:04:30.096100+02:00 level=INFO msg="started server" address=:8080 t_init=5.904506ms
+time=2026-10-23T02:04:30.096423+02:00 level=INFO msg="waiting for servers to shutdown"
+time=2026-10-23T02:04:30.096444+02:00 level=INFO msg="server started" name=SonicRed addr=[::]:8080
 ```
 
 HTTPS
