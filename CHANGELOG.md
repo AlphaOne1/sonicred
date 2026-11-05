@@ -6,6 +6,7 @@ Release 1.11.4
 ==============
 
 - dependency updates
+- fix Go version determination for release builds
 
 Release 1.11.3
 ==============

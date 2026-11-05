@@ -53,7 +53,16 @@ jobs:
 
           - name: Determine Go Version
             id: gover
-            run: echo "minor=`go mod edit -json | jq -r .Go | cut -d. -f1,2`" >> "$GITHUB_OUTPUT"
+            # Go is not installed yet, so parse go.mod directly instead of using `go mod edit`
+            shell: bash
+            run: |
+                MINOR=$(sed -nE 's/^go ([0-9]+\.[0-9]+).*/\1/p' go.mod)
+                if [ -z "$MINOR" ]; then
+                    echo "::error::could not determine Go version from go.mod"
+                    exit 1
+                fi
+                echo "Using Go version $MINOR.x"
+                echo "minor=$MINOR" >> "$GITHUB_OUTPUT"
 
           - name: Install Go
             uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
