@@ -13,6 +13,12 @@ EXEC_PREFIX:=			sonicred
 PACKAGE_FILE_PREFIX:=	$(PROJECT_NAME)
 PACKAGE_NAME:=			$(EXEC_PREFIX)
 THIRD_PARTY_NAME:=		third_party_licenses
+# Additional modules excluded from the third party license collection, e.g.
+# internal modules or licenses go-licenses does not recognize. The own module
+# is always excluded. May be left empty.
+LICENSE_IGNORE_EXTRA:=
+LICENSE_IGNORE_MODULES:=$(shell go list -m) $(LICENSE_IGNORE_EXTRA)
+LICENSE_IGNORE:=		$(addprefix --ignore ,$(strip $(LICENSE_IGNORE_MODULES)))
 IGOOS:=					$(shell go env GOOS)
 IGOARCH:=				$(shell go env GOARCH)
 EXEC_SUFFIX=			$(if $(filter windows,$(IGOOS)),.exe,)
@@ -27,9 +33,13 @@ GIT_AVAILABLE := $(if $(shell git status 2>/dev/null),yes,no)
 ifeq ($(GIT_AVAILABLE),yes)
 	IBUILDTAG :=  $(or $(strip $(shell git describe --tags 2>/dev/null)),v0.0)
 	GIT_REF_DATE:=$(strip $(shell git log -1 --date=format:"%B %Y" --format="%ad" 2>/dev/null))
+	GIT_REVISION:=$(strip $(shell git rev-parse HEAD 2>/dev/null))
+	GIT_COMMIT_TIME:=$(strip $(shell TZ=UTC git log -1 --date=format-local:"%Y-%m-%dT%H:%M:%SZ" --format="%cd" 2>/dev/null))
 endif
 IBUILDTAG?=		unknown
 GIT_REF_DATE?=	$(strip $(shell date +"%B %Y"))
+GIT_REVISION?=	unknown
+GIT_COMMIT_TIME?=	$(strip $(shell date -u +"%Y-%m-%dT%H:%M:%SZ"))
 
 ifdef DEBUG
 $(info PROJECT_NAME:        $(PROJECT_NAME))
@@ -42,6 +52,9 @@ $(info ICGO_ENABLED:        $(ICGO_ENABLED))
 $(info GIT_AVAILABLE:       $(GIT_AVAILABLE))
 $(info IBUILDTAG:           $(IBUILDTAG))
 $(info GIT_REF_DATE:        $(GIT_REF_DATE))
+$(info GIT_REVISION:        $(GIT_REVISION))
+$(info GIT_COMMIT_TIME:     $(GIT_COMMIT_TIME))
+$(info LICENSE_IGNORE:      $(LICENSE_IGNORE))
 endif
 
 PATH:=			$(PATH):$(shell go env GOPATH)/bin
@@ -114,26 +127,25 @@ $(THIRD_PARTY_NAME)-%.tar.xz: $(THIRD_PARTY_NAME)-%-dir
 	rm -rf $(patsubst %-dir,%,$<)
 
 .PRECIOUS: $(THIRD_PARTY_NAME)-%-dir
-$(THIRD_PARTY_NAME)-%-dir: go.mod
-	rm -rf $@
-	GOOS="$(call osNamePrefix,$@,$(THIRD_PARTY_NAME))"		;	\
-	GOARCH="$(call archNamePrefix,$@,$(THIRD_PARTY_NAME))"	;	\
-	export TMP_DIR=`mktemp -d`								&&	\
-	go-licenses save ./...		\
-		--force					\
-		--save_path $${TMP_DIR}	\
-		--ignore `go list -m`								&&	\
+$(THIRD_PARTY_NAME)-%-dir: export GOOS = $(call osNamePrefix,$@,$(THIRD_PARTY_NAME))
+$(THIRD_PARTY_NAME)-%-dir: export GOARCH = $(call archNamePrefix,$@,$(THIRD_PARTY_NAME))
+$(THIRD_PARTY_NAME)-%-dir: go.mod go.sum license_report.md.tmpl
+	rm -rf $@ $@.tmp
+	go-licenses save ./...					\
+		--force								\
+		--save_path $@.tmp					\
+		$(LICENSE_IGNORE)
 	go-licenses report ./...				\
 		--template license_report.md.tmpl	\
-		--ignore `go list -m`				\
-		> $${TMP_DIR}/license_report.md						&&	\
-	mv $${TMP_DIR} $@										||	\
-	rm -rf $${TMP_DIR}
+		$(LICENSE_IGNORE)					\
+		> $@.tmp/license_report.md
+	mv $@.tmp $@
 
 docker-%: $(EXEC_PREFIX)-% $(THIRD_PARTY_NAME)-%.tar.xz
-	TARGET_OS="$(call osName,$<)"							\
-	TARGET_ARCH="$(call archName,$<)"						\
-	docker build --platform=$${TARGET_OS}/$${TARGET_ARCH}	\
+	docker build --platform=$(call osName,$<)/$(call archName,$<)	\
+				--build-arg VERSION="$(IBUILDTAG)"			\
+				--build-arg REVISION="$(GIT_REVISION)"		\
+				--build-arg CREATED="$(GIT_COMMIT_TIME)"	\
 				-t $(EXEC_PREFIX):$(IBUILDTAG)				\
 				--squash									\
 				.
