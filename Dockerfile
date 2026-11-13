@@ -119,9 +119,9 @@ ARG USER
 
 COPY --from=builder /tmp/root   /
 
-# if no volume is mounted, a standard documentation page is shown.
-# This page is overlayed by later mounts.
-VOLUME  /www
+# /www contains a standard documentation page. Web content mounted on /www
+# replaces it entirely. No VOLUME is declared, so derived images can extend
+# /www and a read-only root filesystem also covers it.
 # XDG_CACHE_HOME keeps the default certificate cache out of HOME, which is the served root directory
 ENV     HOME=/www \
         PATH=/bin \
