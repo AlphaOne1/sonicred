@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # SPDX-FileCopyrightText: 2026 The SonicRed contributors.
 # SPDX-License-Identifier: MPL-2.0
 
@@ -11,11 +13,13 @@
 # After starting the image the content of this directory will be served.
 
 ARG USER=appuser
+ARG UID=65532
 
-FROM ubuntu:latest@sha256:6a06111c3b0a8600feadb270aec771dc239bf407b25625f93f44ab00e11f4d3c AS builder
+FROM busybox:1.38.0@sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4 AS builder
 
 ARG TARGETARCH
 ARG USER
+ARG UID
 
 # Centralized versions and checksums for third-party web assets
 ARG HLJS_VER=11.12.0
@@ -30,13 +34,6 @@ ARG GHMD_SHA256=3be3ba6f5b20f9e133688890012a1e20a0a6375efea59c214c424369d7694e3d
 ARG HLJS_CSS_SHA256=3a9a5def8b9c311e5ae43abde85c63133185eed4f0d9f67fea4b00a8308cf066
 ARG HLJS_DARK_CSS_SHA256=bc1116bfba58ee83794d53b8bd08e5ab13cba81bf03454cf67d6cfe435033cae
 
-RUN useradd --home     "/nonexistent"      \
-            --shell    "/usr/sbin/nologin" \
-            --user-group                   \
-            --uid 65532                    \
-            -r                             \
-            "${USER}"
-
 RUN mkdir -p /tmp/root/bin        \
              /tmp/root/etc        \
              /tmp/root/usr/share/doc/sonicred \
@@ -44,6 +41,15 @@ RUN mkdir -p /tmp/root/bin        \
              /tmp/root/www        \
              /tmp/root/www/styles \
              /tmp/root/www/js
+
+# busybox has neither useradd nor getent, so passwd and group are written directly
+COPY <<EOF /tmp/root/etc/passwd
+${USER}:x:${UID}:${UID}::/nonexistent:/usr/sbin/nologin
+EOF
+
+COPY <<EOF /tmp/root/etc/group
+${USER}:x:${UID}:
+EOF
 
 COPY --chmod=0755 sonicred-linux-${TARGETARCH} /tmp/root/bin/sonicred
 COPY --chmod=0444 docker_root/                \
@@ -83,14 +89,13 @@ ADD --chmod=0444                                                                
     https://cdnjs.cloudflare.com/ajax/libs/highlight.js/${HLJS_VER}/styles/github-dark-dimmed.min.css \
     /tmp/root/www/styles/
 
-RUN getent passwd "${USER}" > /tmp/root/etc/passwd &&\
-    getent group  "${USER}" > /tmp/root/etc/group  &&\
-                                                     \
-    chown -R ${USER}:${USER}  /tmp/root/bin          \
-                              /tmp/root/tmp          \
-                              /tmp/root/www        &&\
-    chmod 1777                /tmp/root/tmp        &&\
-    sed -i '1,/<\/p>/{/<a href.*/,/<\/a>/d}' /tmp/root/www/README.md
+# Everything stays owned by root, the runtime user only needs read and execute
+# permissions. The only writable location is /tmp (sticky bit), which also
+# holds the certificate cache (XDG_CACHE_HOME).
+RUN sed -i '1,/<\/p>/{/<a href.*/,/<\/a>/d}' /tmp/root/www/README.md &&\
+    chmod 444  /tmp/root/etc/passwd                                    \
+               /tmp/root/etc/group                                   &&\
+    chmod 1777 /tmp/root/tmp
 
 ################################################################################
 FROM scratch AS sonicred
