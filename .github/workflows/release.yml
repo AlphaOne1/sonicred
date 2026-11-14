@@ -63,25 +63,6 @@ jobs:
                 check-latest: true
                 cache: false
 
-          - name: Install nfpm
-            if: matrix.os == 'linux'
-            run: |
-                VERSION=`go list -m -f '{{.Version}}' github.com/goreleaser/nfpm/v2`
-                echo "Installing nfpm version $VERSION"
-                go install github.com/goreleaser/nfpm/v2/cmd/nfpm@$VERSION
-
-          - name: Install go-licenses
-            shell: bash
-            run: |
-                VERSION=`go list -m -f '{{.Version}}' github.com/google/go-licenses/v2`
-                echo "Installing go-licenses version $VERSION"
-                go install github.com/google/go-licenses/v2@$VERSION
-
-          - name: Add GOPATH/bin to PATH
-            shell: bash
-            run:
-                echo "`go env GOPATH`/bin" >> "$GITHUB_PATH"
-
           - name: Build
             shell: bash
             env:

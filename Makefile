@@ -86,6 +86,13 @@ helm: $(PACKAGE_FILE_PREFIX)-$(IBUILDTAG).tgz
 %.xz: %
 	xz -k -f -6 $<
 
+# Path of a tool registered in go.mod, built for the host. The rules set GOOS and
+# GOARCH to the target platform, which `go tool` would otherwise also use to build
+# the tool itself, producing an executable that does not run on the host.
+define goTool
+$(or $(shell GOOS= GOARCH= go tool -n $(1)),$(error Could not build go tool '$(1)'))
+endef
+
 define osNamePrefix
 $(firstword $(subst -, ,$(basename $(patsubst $(2)-%,%,$(1)))))
 endef
@@ -131,11 +138,11 @@ $(THIRD_PARTY_NAME)-%-dir: export GOOS = $(call osNamePrefix,$@,$(THIRD_PARTY_NA
 $(THIRD_PARTY_NAME)-%-dir: export GOARCH = $(call archNamePrefix,$@,$(THIRD_PARTY_NAME))
 $(THIRD_PARTY_NAME)-%-dir: go.mod go.sum license_report.md.tmpl
 	rm -rf $@ $@.tmp
-	go-licenses save ./...					\
+	$(call goTool,go-licenses) save ./...					\
 		--force								\
 		--save_path $@.tmp					\
 		$(LICENSE_IGNORE)
-	go-licenses report ./...				\
+	$(call goTool,go-licenses) report ./...				\
 		--template license_report.md.tmpl	\
 		$(LICENSE_IGNORE)					\
 		> $@.tmp/license_report.md
@@ -154,7 +161,7 @@ $(PACKAGE_FILE_PREFIX)-$(IBUILDTAG).tgz: $(shell find helm -type f)
 
 $(PACKAGE_FILE_PREFIX)-$(IGOOS)-$(IGOARCH)-$(IBUILDTAG).%: nfpm-$(IGOOS)-$(IGOARCH).yaml $(EXEC_PREFIX)-$(IGOOS)-$(IGOARCH)$(EXEC_SUFFIX) $(MANPAGES) $(THIRD_PARTY_NAME)-$(IGOOS)-$(IGOARCH)-dir
 	$(if $(filter deb msix rpm,$*),,$(error "Package type $* not supported"))
-	nfpm package --config $< --packager $* --target $@
+	$(call goTool,nfpm) package --config $< --packager $* --target $@
 
 nfpm-%.yaml: nfpm.yaml.tmpl
 	TARGET_OS="$(call osNamePrefix,$@,nfpm)"		\
