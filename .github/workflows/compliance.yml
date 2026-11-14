@@ -137,15 +137,15 @@ jobs:
             with:
                 egress-policy: audit
 
-          - name: Install Go
-            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-            with:
-                go-version: ${{matrix.go-version}}
-
           - name: Checkout
             uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             with:
                 fetch-depth: 1
+
+          - name: Install Go
+            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+            with:
+                go-version: ${{matrix.go-version}}
 
           - name: FormatCheck
             run: if [ `go fmt ./... | wc -l` -gt 0 ] ; then echo "Found unformatted code" ; exit 1 ; else exit 0 ; fi
@@ -165,6 +165,11 @@ jobs:
             uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             with:
                 fetch-depth: 1
+
+          - name: Install Go
+            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+            with:
+                go-version: stable
 
           - name: Run golangci-lint
             uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
@@ -205,15 +210,15 @@ jobs:
             with:
                 egress-policy: audit
 
-          - name: Install Go
-            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-            with:
-                go-version: ${{matrix.go-version}}
-
           - name: Checkout
             uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             with:
                 fetch-depth: 1
+
+          - name: Install Go
+            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+            with:
+                go-version: ${{matrix.go-version}}
 
           - name: StaticCheck
             uses: dominikh/staticcheck-action@9716614d4101e79b4340dd97b10e54d68234e431 # v1.4.1
