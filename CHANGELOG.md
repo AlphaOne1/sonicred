@@ -6,6 +6,9 @@ Release Next
 ============
 
 - dependency updates
+- tests, fuzzing, vulnerability checks and release builds now all use the Go
+  version from `go.mod` with its latest patch release, determined by a shared
+  workflow action
 
 Release 1.11.4
 ==============
