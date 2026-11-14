@@ -6,19 +6,20 @@
 ############################
 # Usage:
 #
-# This dockerfile relies on a previously build os and architecture fitting executable.
-# It can be generated as follows:
-#     $ make sonicred-linux-amd64
+# This dockerfile relies on a previously built executable and third party
+# license archive fitting the target os and architecture. The image and its
+# prerequisites are built as follows:
+#     $ make docker                  (linux/amd64)
+#     $ make docker-linux-arm64      (other architectures)
 # Copy or mount the web content to the /www directory.
 # After starting the image the content of this directory will be served.
 
-ARG USER=appuser
+# Numeric, so that Kubernetes can verify runAsNonRoot. The user is named appuser.
 ARG UID=65532
 
 FROM busybox:1.38.0@sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4 AS builder
 
 ARG TARGETARCH
-ARG USER
 ARG UID
 
 # Centralized versions and checksums for third-party web assets
@@ -44,11 +45,11 @@ RUN mkdir -p /tmp/root/bin        \
 
 # busybox has neither useradd nor getent, so passwd and group are written directly
 COPY <<EOF /tmp/root/etc/passwd
-${USER}:x:${UID}:${UID}::/nonexistent:/usr/sbin/nologin
+appuser:x:${UID}:${UID}::/nonexistent:/usr/sbin/nologin
 EOF
 
 COPY <<EOF /tmp/root/etc/group
-${USER}:x:${UID}:
+appuser:x:${UID}:
 EOF
 
 COPY --chmod=0755 sonicred-linux-${TARGETARCH} /tmp/root/bin/sonicred
@@ -115,8 +116,12 @@ LABEL org.opencontainers.image.title="SonicRed"                             \
       org.opencontainers.image.revision="${REVISION}"                       \
       org.opencontainers.image.created="${CREATED}"
 
-ARG USER
+ARG UID
 
+# The whole file system is assembled in the builder stage and copied here in a
+# single step, so the image consists of exactly this one layer. Keep it that
+# way: add further files in the builder stage, not with additional
+# COPY/ADD/RUN instructions in this stage.
 COPY --from=builder /tmp/root   /
 
 # /www contains a standard documentation page. Web content mounted on /www
@@ -132,6 +137,6 @@ WORKDIR /www
 EXPOSE  8080/tcp  \
         8081/tcp
 
-USER    ${USER}:${USER}
+USER    ${UID}:${UID}
 
 ENTRYPOINT ["/bin/sonicred"]

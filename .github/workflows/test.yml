@@ -18,8 +18,6 @@ jobs:
     Test:
         strategy:
             matrix:
-                go-version:
-                  - "stable"
                 platform:
                   #- macos-latest
                   - ubuntu-latest
@@ -36,10 +34,16 @@ jobs:
             with:
                 fetch-depth: 1
 
+          # same Go version as the release builds: minor version from go.mod with the latest patch release
+          - name: Determine Go Version
+            id: gover
+            uses: ./.github/actions/go-version
+
           - name: Install Go
             uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
             with:
-                go-version-file: go.mod
+                go-version: ${{ steps.gover.outputs.version }}
+                check-latest: true
 
           - name: Test
             run: make testreport
@@ -64,8 +68,6 @@ jobs:
     FuzzTest:
         strategy:
             matrix:
-                go-version:
-                  - "stable"
                 platform:
                   #- macos-latest
                   - ubuntu-latest
@@ -77,15 +79,21 @@ jobs:
             with:
                 egress-policy: audit
 
-          - name: Install Go
-            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-            with:
-                go-version: ${{matrix.go-version}}
-
           - name: Checkout
             uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             with:
                 fetch-depth: 1
+
+          # same Go version as the release builds: minor version from go.mod with the latest patch release
+          - name: Determine Go Version
+            id: gover
+            uses: ./.github/actions/go-version
+
+          - name: Install Go
+            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+            with:
+                go-version: ${{ steps.gover.outputs.version }}
+                check-latest: true
 
           - name: Run Fuzz Test
             shell: bash

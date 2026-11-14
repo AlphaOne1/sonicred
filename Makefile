@@ -147,10 +147,9 @@ docker-%: $(EXEC_PREFIX)-% $(THIRD_PARTY_NAME)-%.tar.xz
 				--build-arg REVISION="$(GIT_REVISION)"		\
 				--build-arg CREATED="$(GIT_COMMIT_TIME)"	\
 				-t $(EXEC_PREFIX):$(IBUILDTAG)				\
-				--squash									\
 				.
 
-$(PACKAGE_FILE_PREFIX)-$(IBUILDTAG).tgz: $(wildcard helm/* helm/**/*)
+$(PACKAGE_FILE_PREFIX)-$(IBUILDTAG).tgz: $(shell find helm -type f)
 	helm package --app-version "$(IBUILDTAG)" --version "$(IBUILDTAG)" helm
 
 $(PACKAGE_FILE_PREFIX)-$(IGOOS)-$(IGOARCH)-$(IBUILDTAG).%: nfpm-$(IGOOS)-$(IGOARCH).yaml $(EXEC_PREFIX)-$(IGOOS)-$(IGOARCH)$(EXEC_SUFFIX) $(MANPAGES) $(THIRD_PARTY_NAME)-$(IGOOS)-$(IGOARCH)-dir
