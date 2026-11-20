@@ -31,6 +31,8 @@ ${EXEC_PREFIX} \- Pequeño servidor seguro de archivos estáticos.
 [\-pprof {true,false}]
 [\-log level {debug,info,warn,error}]
 [\-logstyle {auto,text,json}]
+[\-help]
+[\-version]
 .\"NODE "DESCRIPCIÓN"
 .SH "DESCRIPCIÓN"
 .I ${PROJECT_NAME}
@@ -77,13 +79,14 @@ configura en
 dentro del directorio de caché del usuario.
 .TP
 .I \-acmeendpoint url
-Establece otro punto final para la obtención automática de certificados.
+Establece otro punto final para la obtención automática de certificados. Por defecto se utiliza el
+punto final de producción de Let's Encrypt.
 .TP
 .I \-index {true,false}
 Habilita o deshabilita el directorio de carpetas. Por defecto en
 .BR true
 .TP
-.I \-header <encabezado>
+.I \-header encabezado
 Añade el encabezado HTTP especificado a las respuestas; se puede indicar varias veces.
 .TP
 .I \-headerfile archivo
@@ -108,6 +111,8 @@ Habilita o deshabilita el soporte de telemetría. Por defecto en
 .BR true
 .TP
 .I \-trace-endpoint dirección
+Obsoleto, utilice en su lugar la variable de entorno
+.BR \%OTEL_EXPORTER_OTLP_TRACES_ENDPOINT .
 Establece el punto de conexión para la funcionalidad de trazado. Por defecto en
 .BR <vacío>
 .TP

@@ -122,6 +122,10 @@ autoscaling:
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
 
+# Size limit of the emptyDir mounted on /tmp. As the root filesystem is read-only,
+# this is the only writable location, used e.g. by the WAF and the certificate cache.
+tmpSizeLimit: 8Mi
+
 # Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo

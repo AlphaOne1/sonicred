@@ -31,6 +31,8 @@ ${EXEC_PREFIX} \- Small, secure static file server.
 [\-pprof {true,false}]
 [\-log level {debug,info,warn,error}]
 [\-logstyle {auto,text,json}]
+[\-help]
+[\-version]
 .\"NODE "DESCRIPTION"
 .SH "DESCRIPTION"
 .I ${PROJECT_NAME}
@@ -75,7 +77,8 @@ Set directory for certificate cache. It must not be inside of the web root direc
 inside the user cache directory.
 .TP
 .I \-acmeendpoint url
-Set other endpoint for automatic certificate retrieval.
+Set other endpoint for automatic certificate retrieval. Defaults to the production endpoint of
+Let's Encrypt.
 .TP
 .I \-index {true,false}
 Enable or disable directory listings. Defaults to
@@ -106,7 +109,9 @@ Enable or disable telemetry support. Defaults to
 .BR true
 .TP
 .I \-trace-endpoint address
-Set the endpoint for the tracing facility. Defaults to
+Deprecated, use the environment variable
+.B \%OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+instead. Set the endpoint for the tracing facility. Defaults to
 .BR <empty>
 .TP
 .I \-pprof {true,false}
