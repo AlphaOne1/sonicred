@@ -133,7 +133,7 @@ Installation
 Builds are secured with SLSA Level 3 provenance via slsa-framework/slsa-github-generator.
 The downloaded archive together with the provenance file `multiple.intoto.jsonl`
 can be verified using the [slsa-verifier](https://github.com/slsa-framework/slsa-verifier/)
-(replace the `<VERSION>` with the one you actually downloaded, e.g., `v1.11.4`):
+(replace the `<VERSION>` with the one you actually downloaded, e.g., `v1.12.0`):
 
 ```bash
 slsa-verifier verify-artifact SonicRed-linux-amd64-<VERSION>.deb \
@@ -367,7 +367,7 @@ Docker Usage
 *SonicRed* is also distributed as a Docker image. To start it, one can simply write:
 
 ```sh
-docker run -p 8080:8080 ghcr.io/alphaone1/sonicred:v1.11.4
+docker run -p 8080:8080 ghcr.io/alphaone1/sonicred:v1.12.0
 ```
 
 and it will show this documentation. The entrypoint of the Dockerfile just starts *SonicRed* without any parameters.
@@ -375,7 +375,7 @@ Therefore, `/www` is the default web root directory. Every parameter passed afte
 parameter to *SonicRed*. For example, running
 
 ```sh
-docker run -p 8080:8080 ghcr.io/alphaone1/sonicred:v1.11.4 --log=debug
+docker run -p 8080:8080 ghcr.io/alphaone1/sonicred:v1.12.0 --log=debug
 ```
 
 is equivalent to running:
@@ -388,7 +388,7 @@ The Docker image allows new web content to be mounted on `/www`, replacing the d
 web root directory, e.g., `myapp/`, can be mounted like this:
 
 ```sh
-docker run -p 8080:8080 -v ./myapp:/www:ro ghcr.io/alphaone1/sonicred:v1.11.4
+docker run -p 8080:8080 -v ./myapp:/www:ro ghcr.io/alphaone1/sonicred:v1.12.0
 ```
 
 Note that without specifying the `:ro` flag, the content will be mounted as read-write. *SonicRed* does not write into
@@ -398,5 +398,5 @@ non-root user that *SonicRed* uses (UID 65532).
 If telemetry is needed, port 8081 needs to be exposed additionally:
 
 ```sh
-docker run -p 8080:8080 -p 8081:8081 ghcr.io/alphaone1/sonicred:v1.11.4
+docker run -p 8080:8080 -p 8081:8081 ghcr.io/alphaone1/sonicred:v1.12.0
 ```

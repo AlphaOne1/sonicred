@@ -2,8 +2,8 @@
      SPDX-License-Identifier: MPL-2.0
 -->
 
-Release Next
-============
+Release 1.12.0
+==============
 
 - dependency updates
 - tests, fuzzing, vulnerability checks and release builds now all use the Go
