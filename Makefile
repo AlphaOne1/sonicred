@@ -89,8 +89,10 @@ helm: $(PACKAGE_FILE_PREFIX)-$(IBUILDTAG).tgz
 # Path of a tool registered in go.mod, built for the host. The rules set GOOS and
 # GOARCH to the target platform, which `go tool` would otherwise also use to build
 # the tool itself, producing an executable that does not run on the host.
+# On Windows the path contains backslashes, which the recipe shell would treat as
+# escape characters, so they are converted to forward slashes.
 define goTool
-$(or $(shell GOOS= GOARCH= go tool -n $(1)),$(error Could not build go tool '$(1)'))
+$(subst \,/,$(or $(shell GOOS= GOARCH= go tool -n $(1)),$(error Could not build go tool '$(1)')))
 endef
 
 define osNamePrefix
