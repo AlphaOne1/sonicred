@@ -34,6 +34,10 @@ import (
 	"github.com/AlphaOne1/sonicred/utils"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
+	// Mozilla root certificates, only used if the system provides none (e.g. scratch
+	// container images). Required for outgoing TLS, e.g. ACME or OTLP over HTTPS.
+	_ "golang.org/x/crypto/x509roots/fallback"
 )
 
 // ServerName is the reported server name in the header.

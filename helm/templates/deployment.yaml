@@ -78,12 +78,18 @@ spec:
                         {{- toYaml .Values.readinessProbe | nindent 24 }}
                     resources:
                         {{- toYaml .Values.resources | nindent 24 }}
-                {{- with .Values.volumeMounts }}
                     volumeMounts:
+                        # writable /tmp despite readOnlyRootFilesystem, e.g. for the WAF and the certificate cache
+                        -   name: tmp
+                            mountPath: /tmp
+                {{- with .Values.volumeMounts }}
                         {{- toYaml . | nindent 24 }}
                 {{- end }}
-            {{- with .Values.volumes }}
             volumes:
+                -   name: tmp
+                    emptyDir:
+                        sizeLimit: {{ .Values.tmpSizeLimit }}
+            {{- with .Values.volumes }}
                 {{- toYaml . | nindent 16 }}
             {{- end }}
             {{- with .Values.nodeSelector }}

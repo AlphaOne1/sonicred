@@ -9,6 +9,18 @@ Release Next
 - tests, fuzzing, vulnerability checks and release builds now all use the Go
   version from `go.mod` with its latest patch release, determined by a shared
   workflow action
+- removed the unnecessary `VOLUME /www` from the container image: no anonymous
+  volumes are created anymore, derived images can extend `/www`, and a
+  read-only root filesystem now also covers `/www`
+- the Mozilla root certificates are embedded as a fallback, so outgoing TLS
+  connections (e.g. ACME certificate retrieval or OTLP over HTTPS) also work in
+  the container image, which ships no system certificates
+- the helm chart mounts a writable `/tmp` (`emptyDir`, size limit configurable
+  via `tmpSizeLimit`, default 8 MiB), needed e.g. by the WAF despite the
+  read-only root filesystem
+- the minimum Go version for building is now 1.27.4
+- documentation fixes: man pages now list `-help`/`-version`, the default ACME
+  endpoint and the deprecation of `-trace-endpoint`
 
 Release 1.11.4
 ==============
